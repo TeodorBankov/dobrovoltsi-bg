@@ -1,6 +1,6 @@
 // /src/pages/AdminDashboard.js
-import React, { useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useContext, useState } from 'react';
+//import axios from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
 import { Alert, Spinner, Dropdown, Card, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,10 @@ import HoverDropdown from '../components/HoverDropdown'; // Ensure this componen
 import './AdminDashboard.css'; // Import custom CSS
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { useAdminInitiatives } from '../hooks/useAdminInitiatives';
+import { useAdminMetrics } from '../hooks/useAdminMetrics';
+import { useApproveInitiative } from '../hooks/useApproveInitiative';
+import { useDeleteInitiative } from '../hooks/useDeleteInitiative';
 
 // Register necessary chart components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -43,16 +47,21 @@ const chartOptions = {
 
 const AdminDashboard = () => {
   const { auth } = useContext(AuthContext);
+  /*
   const [initiatives, setInitiatives] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  */
   const [message, setMessage] = useState(null);
 
+  /*
   // Metrics state
   const [metrics, setMetrics] = useState(null);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [errorMetrics, setErrorMetrics] = useState('');
+  */
 
+  /*
   useEffect(() => {
     const fetchAllInitiatives = async () => {
       try {
@@ -100,7 +109,38 @@ const AdminDashboard = () => {
     };
     fetchMetrics();
   }, [auth]);
+  */
 
+  const {
+    data: initiatives = [],
+      isLoading,
+      isError,
+      error,
+  } = useAdminInitiatives(auth.accessToken);
+
+  const {
+    data: metrics,
+      isLoading: loadingMetrics,
+      isError: isMetricsError,
+      error: metricsError,
+      refetch: refetchMetrics,
+  } = useAdminMetrics(auth.accessToken)
+
+  const approveMutation = useApproveInitiative(auth.accessToken, {
+    onSuccess: () => {
+      setMessage('Инициативата е одобрена!');
+      refetchMetrics();
+    },
+  });
+
+  const deleteMutation = useDeleteInitiative(auth.accessToken, {
+    onSuccess: () => {
+      setMessage('Инициативата е изтрита успешно');
+      refetchMetrics();
+    }
+  });
+
+  /*
   const approveInitiative = async (id) => {
     try {
       await axios.put(`/initiatives/${id}/approve`, {}, {
@@ -129,9 +169,20 @@ const AdminDashboard = () => {
       setError('Грешка при изтриване на инициативата');
     }
   };
+  */
 
-  if (loading && loadingMetrics) return <div className="container mt-5 text-center"><Spinner animation="border"/></div>;
-  if (error && errorMetrics) return <div className="container mt-5"><Alert variant="danger">{error} {errorMetrics}</Alert></div>;
+  const approveInitiative = (id) => {
+    approveMutation.mutate(id);
+  };
+
+  const deleteInitiative = (id) => {
+    if (!window.confirm('Сигурни ли сте, че искате да изтриете тази инициатива?')) return;
+    deleteMutation.mutate(id);
+  }
+
+  if (isLoading && loadingMetrics) return <div className="container mt-5 text-center"><Spinner animation="border"/></div>;
+  if (isError || isMetricsError)
+    return <div className="container mt-5"><Alert variant="danger">{error?.message || metricsError?.message || 'Грешка при зареждане'}</Alert></div>;
 
   // Prepare data for charts
   const usersByRoleData = metrics ? {
@@ -204,8 +255,12 @@ const AdminDashboard = () => {
         <div className="text-center">
           <Spinner animation="border" />
         </div>
-      ) : errorMetrics ? (
-        <Alert variant="danger">{errorMetrics}</Alert>
+      ) : isMetricsError ? (
+        <Alert variant="danger">
+          {metricsError?.response?.data?.message ||
+          metricsError?.message ||
+          'Грешка при зареждане на метриките'}
+        </Alert>
       ) : metrics ? (
         <Row className="mt-3">
           <Col md={4}>
@@ -277,7 +332,7 @@ const AdminDashboard = () => {
 
       {/* Initiatives Section */}
       <h3 className="mt-5">Инициативи</h3>
-      {loading ? (
+      {isLoading ? (
         <div className="text-center">
           <Spinner animation="border" />
         </div>

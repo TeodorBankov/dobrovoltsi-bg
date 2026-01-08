@@ -1,22 +1,27 @@
-// /frontend/src/pages/InitiativeList.js
-import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import React, { useState, useContext } from 'react';
+//import axios from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
 import { Spinner, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { useInitiatives } from '../hooks/useInitiatives';
+import { useUserApplications } from '../hooks/useUserApplications';
+import { useApplyForInitiative } from '../hooks/useApplyForInitiative';
 
 const InitiativeList = () => {
   const { auth } = useContext(AuthContext);
+  /*
   const [initiatives, setInitiatives] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const [userApplications, setUserApplications] = useState([]);
+  */
   const [applyingInitiativeId, setApplyingInitiativeId] = useState(null);
   const [message, setMessage] = useState(null);
 
   const userRole = auth.user?.role;
 
+  /*
   useEffect(() => {
     const fetchInitiatives = async () => {
       try {
@@ -50,7 +55,38 @@ const InitiativeList = () => {
       fetchUserApplications();
     }
   }, [auth.accessToken, userRole]);
+  */
 
+  const {
+    data: initiatives = [],
+      isLoading,
+      isError,
+  } = useInitiatives();
+
+  const {
+    data: userApplications = [],
+  } = useUserApplications(auth.accessToken, userRole === 'volunteer');
+
+  const applyMutation = useApplyForInitiative(auth.accessToken, {
+    onSuccess: (_, initiativeId) => {
+      setMessage({
+        type: 'success',
+        text: 'Кандидатурата ви е подадена успешно!',
+      });
+    },
+    onError: (err) => {
+      setMessage({
+        type: 'danger',
+        text:
+          err?.response?.data?.msg || 'Грешка при подаване на кандидатурата',
+      });
+    },
+    onSettled: () => {
+      setApplyingInitiativeId(null);
+    },
+  });
+
+  /*
   const handleApply = async (initiativeId) => {
     setApplyingInitiativeId(initiativeId);
     setMessage(null);
@@ -77,18 +113,24 @@ const InitiativeList = () => {
       setApplyingInitiativeId(null);
     }
   };
+  */
+  const handleApply = (initiativeId) => {
+    setApplyingInitiativeId(initiativeId);
+    setMessage(null);
+    applyMutation.mutate(initiativeId);
+  };
 
   const isApplied = (initiativeId) => {
     return userApplications.some((app) => app.initiativeId === initiativeId);
   };
 
-  if (loading)
+  if (isLoading)
     return (
       <div className="container mt-5 text-center">
         <Spinner animation="border" />
       </div>
     );
-  if (error)
+  if (isError)
     return (
       <div className="container mt-5">
         <Alert variant="danger">Грешка при зареждане на инициативите.</Alert>
