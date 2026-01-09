@@ -47,69 +47,7 @@ const chartOptions = {
 
 const AdminDashboard = () => {
   const { auth } = useContext(AuthContext);
-  /*
-  const [initiatives, setInitiatives] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  */
   const [message, setMessage] = useState(null);
-
-  /*
-  // Metrics state
-  const [metrics, setMetrics] = useState(null);
-  const [loadingMetrics, setLoadingMetrics] = useState(true);
-  const [errorMetrics, setErrorMetrics] = useState('');
-  */
-
-  /*
-  useEffect(() => {
-    const fetchAllInitiatives = async () => {
-      try {
-        const res = await axios.get('/initiatives', {
-          headers: { Authorization: `Bearer ${auth.accessToken}` }
-        });
-        setInitiatives(res.data);
-      } catch (err) {
-        console.error(err);
-        setError('Грешка при зареждане на инициативите');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllInitiatives();
-  }, [auth]);
-
-  const fetchMetrics = async () => {
-    try {
-      const res = await axios.get('/admin/metrics', {
-        headers: { Authorization: `Bearer ${auth.accessToken}` }
-      });
-      setMetrics(res.data);
-    } catch (err) {
-      console.error(err);
-      setErrorMetrics('Грешка при зареждане на метриките');
-    } finally {
-      setLoadingMetrics(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const res = await axios.get('/admin/metrics', {
-          headers: { Authorization: `Bearer ${auth.accessToken}` }
-        });
-        setMetrics(res.data);
-      } catch (err) {
-        console.error(err);
-        setErrorMetrics('Грешка при зареждане на метриките');
-      } finally {
-        setLoadingMetrics(false);
-      }
-    };
-    fetchMetrics();
-  }, [auth]);
-  */
 
   const {
     data: initiatives = [],
@@ -139,37 +77,6 @@ const AdminDashboard = () => {
       refetchMetrics();
     }
   });
-
-  /*
-  const approveInitiative = async (id) => {
-    try {
-      await axios.put(`/initiatives/${id}/approve`, {}, {
-        headers: { Authorization: `Bearer ${auth.accessToken}` }
-      });
-      setMessage('Инициативата е одобрена!');
-      setInitiatives(initiatives.map(i => i.id === id ? { ...i, approved: true } : i));
-      fetchMetrics(); // Refresh metrics
-    } catch (err) {
-      console.error(err);
-      setError('Грешка при одобряване на инициативата');
-    }
-  };
-
-  const deleteInitiative = async (id) => {
-    if (!window.confirm('Сигурни ли сте, че искате да изтриете тази инициатива?')) return;
-    try {
-      await axios.delete(`/initiatives/${id}`, {
-        headers: { Authorization: `Bearer ${auth.accessToken}` }
-      });
-      setInitiatives(initiatives.filter(i => i.id !== id));
-      setMessage('Инициативата е изтрита успешно');
-      fetchMetrics(); // Refresh metrics
-    } catch (err) {
-      console.error(err);
-      setError('Грешка при изтриване на инициативата');
-    }
-  };
-  */
 
   const approveInitiative = (id) => {
     approveMutation.mutate(id);

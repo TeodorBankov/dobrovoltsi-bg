@@ -9,53 +9,12 @@ import { useApplyForInitiative } from '../hooks/useApplyForInitiative';
 
 const InitiativeList = () => {
   const { auth } = useContext(AuthContext);
-  /*
-  const [initiatives, setInitiatives] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  const [userApplications, setUserApplications] = useState([]);
-  */
   const [applyingInitiativeId, setApplyingInitiativeId] = useState(null);
   const [message, setMessage] = useState(null);
 
   const userRole = auth.user?.role;
 
-  /*
-  useEffect(() => {
-    const fetchInitiatives = async () => {
-      try {
-        const res = await axios.get('/initiatives');
-        setInitiatives(res.data);
-      } catch (err) {
-        console.error(err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchInitiatives();
-  }, []);
-
-  useEffect(() => {
-    if (userRole === 'volunteer') {
-      const fetchUserApplications = async () => {
-        try {
-          const res = await axios.get('/applications/user', {
-            headers: {
-              Authorization: `Bearer ${auth.accessToken}`,
-            },
-          });
-          setUserApplications(res.data);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      fetchUserApplications();
-    }
-  }, [auth.accessToken, userRole]);
-  */
 
   const {
     data: initiatives = [],
@@ -86,34 +45,6 @@ const InitiativeList = () => {
     },
   });
 
-  /*
-  const handleApply = async (initiativeId) => {
-    setApplyingInitiativeId(initiativeId);
-    setMessage(null);
-
-    try {
-      await axios.post(
-        '/applications',
-        { initiativeId },
-        {
-          headers: {
-            Authorization: `Bearer ${auth.accessToken}`,
-          },
-        }
-      );
-      setUserApplications([...userApplications, { initiativeId, status: 'Pending' }]);
-      setMessage({ type: 'success', text: 'Кандидатурата ви е подадена успешно!' });
-    } catch (err) {
-      console.error(err.response?.data || err);
-      setMessage({
-        type: 'danger',
-        text: err.response?.data?.msg || 'Грешка при подаване на кандидатурата',
-      });
-    } finally {
-      setApplyingInitiativeId(null);
-    }
-  };
-  */
   const handleApply = (initiativeId) => {
     setApplyingInitiativeId(initiativeId);
     setMessage(null);
